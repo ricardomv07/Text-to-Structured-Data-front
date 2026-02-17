@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Upload } from 'lucide-react';
 import axios from 'axios';
 
@@ -15,6 +15,7 @@ console.log("Conectando a:", API_URL);
 const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, setJsonData }) => {
     const [dragActive, setDragActive] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleDrag = (e: React.DragEvent) => {
         e.preventDefault();
@@ -32,6 +33,17 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
         if (files.length > 0) {
             const file = files[0];
             await processFile(file);
+        }
+    };
+
+    const handleClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            await processFile(files[0]);
         }
     };
 
@@ -62,11 +74,19 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
 
     return (
         <div>
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept=".txt,.docx,.xlsx"
+                onChange={handleFileChange}
+                className="hidden"
+            />
             <div
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
+                onClick={handleClick}
                 className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition ${
                     dragActive ? 'border-blue-500 bg-blue-900/20' : 'border-gray-600 hover:border-gray-500'
                 }`}

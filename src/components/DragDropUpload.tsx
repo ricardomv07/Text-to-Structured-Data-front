@@ -43,7 +43,7 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
 
         try {
             // CAMBIO AQUÍ: Usamos ${API_URL} en lugar de localhost
-            const response = await axios.post(`${API_URL}/api/process`, formData);
+            const response = await axios.post(`${API_URL}api/process`, formData);
             
             if (response.data.error) {
                 setError(response.data.error);

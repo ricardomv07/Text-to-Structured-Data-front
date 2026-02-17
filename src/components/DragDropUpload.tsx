@@ -10,6 +10,8 @@ interface DragDropUploadProps {
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://text-to-structured-data.onrender.com';
 
+console.log("Conectando a:", API_URL);
+
 const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, setJsonData }) => {
     const [dragActive, setDragActive] = useState(false);
     const [error, setError] = useState<string | null>(null);

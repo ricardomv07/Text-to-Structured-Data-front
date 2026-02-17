@@ -8,6 +8,8 @@ interface DragDropUploadProps {
     setJsonData: (data: any) => void;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://text-to-structured-data.onrender.com';
+
 const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, setJsonData }) => {
     const [dragActive, setDragActive] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -38,7 +40,9 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
         formData.append('file', file);
 
         try {
-            const response = await axios.post('http://localhost:8000/api/process', formData);
+            // CAMBIO AQUÍ: Usamos ${API_URL} en lugar de localhost
+            const response = await axios.post(`${API_URL}/api/process`, formData);
+            
             if (response.data.error) {
                 setError(response.data.error);
             } else {
@@ -47,7 +51,7 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
             }
         } catch (error: any) {
             console.error('Error processing file:', error);
-            const errorMessage = error.response?.data?.error || 'Error al procesar el archivo';
+            const errorMessage = error.response?.data?.error || 'Error al conectar con el servidor';
             setError(errorMessage);
         } finally {
             setLoading(false);

@@ -66,13 +66,19 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
             }
         } catch (error: any) {
             console.error('Error processing file:', error);
+            console.error('Error response:', error.response);
+            console.error('Error data:', error.response?.data);
             
             let errorMessage = 'Error al procesar el archivo';
             
             if (error.code === 'ECONNABORTED') {
                 errorMessage = 'El servidor tardó demasiado en responder. Por favor, intenta nuevamente.';
             } else if (error.response?.status === 500) {
-                errorMessage = error.response?.data?.error || 'El servidor está iniciando (Render free tier). Por favor, espera 30 segundos e intenta de nuevo.';
+                // Mejorar el mensaje de error para mostrar detalles del backend
+                const backendError = error.response?.data?.error || error.response?.data?.details || error.response?.data?.message;
+                errorMessage = backendError 
+                    ? `Error del servidor: ${backendError}` 
+                    : 'Error interno del servidor. Revisa la consola del navegador para más detalles.';
             } else if (error.response?.data?.error) {
                 errorMessage = error.response.data.error;
             } else if (!error.response) {

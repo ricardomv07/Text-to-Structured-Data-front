@@ -13,6 +13,34 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://text-to-structured-data
 
 console.log("Conectando a:", API_URL);
 
+// ✅ Función para convertir objeto con índices numéricos a array
+const convertToArray = (data: any): any[] => {
+    if (!data) return [];
+    
+    // Si ya es array, retornarlo
+    if (Array.isArray(data)) {
+        return data;
+    }
+    
+    // Si es un objeto con claves numéricas (ej: {"0": {...}, "1": {...}})
+    if (typeof data === 'object') {
+        const keys = Object.keys(data);
+        
+        // Verificar si todas las claves son números consecutivos
+        const isIndexedObject = keys.every((key, index) => key === String(index));
+        
+        if (isIndexedObject && keys.length > 0) {
+            // Convertir a array manteniendo el orden
+            return keys.map(key => data[key]);
+        }
+        
+        // Si es un objeto único (sin índices numéricos), convertir a array de un elemento
+        return [data];
+    }
+    
+    return [data];
+};
+
 const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, setJsonData, hasData }) => {
     const [dragActive, setDragActive] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -71,17 +99,19 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
             } else {
                 onUpload(response.data.raw_text);
                 
-                // ✅ CORRECCIÓN: Mantener structured_data como array
-                const structuredData = response.data.structured_data;
+                // ✅ CORRECCIÓN: Convertir objeto con índices numéricos a array real
+                const rawData = response.data.structured_data;
+                const structuredData = convertToArray(rawData);
                 
-                // Verificar que sea array y mantenerlo como tal
-                if (Array.isArray(structuredData)) {
-                    console.log(`✓ Extraídos ${structuredData.length} registro(s) como array`);
-                    setJsonData(structuredData); // Mantener como array [{...}, {...}]
-                } else {
-                    console.warn('⚠ structured_data no es array, convirtiendo...');
-                    setJsonData([structuredData]); // Convertir a array si viene como objeto único
-                }
+                console.log('📊 Datos recibidos:', {
+                    tipo_original: Array.isArray(rawData) ? 'array' : 'objeto',
+                    raw: rawData,
+                    convertido_a: 'array',
+                    registros: structuredData.length,
+                    datos: structuredData
+                });
+                
+                setJsonData(structuredData); // Siempre guardar como array
             }
         } catch (error: any) {
             console.error('Error processing file:', error);

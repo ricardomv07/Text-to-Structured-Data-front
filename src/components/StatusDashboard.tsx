@@ -5,22 +5,39 @@ interface StatusDashboardProps {
     data: any;
 }
 
-const StatusDashboard: React.FC<StatusDashboardProps> = ({ data }) => {
-    // ✅ CORRECCIÓN: Manejar tanto arrays como objetos
-    let displayData = null;
-    let recordCount = 0;
+// ✅ Función para convertir objeto con índices numéricos a array
+const convertToArray = (data: any): any[] => {
+  if (!data) return [];
+  
+  // Si ya es array, retornarlo
+  if (Array.isArray(data)) {
+    return data;
+  }
+  
+  // Si es un objeto con claves numéricas (ej: {"0": {...}, "1": {...}})
+  if (typeof data === 'object') {
+    const keys = Object.keys(data);
     
-    if (Array.isArray(data)) {
-        // Si es array, usar el primer registro
-        if (data.length > 0) {
-            displayData = data[0];
-            recordCount = data.length;
-        }
-    } else if (data) {
-        // Si es objeto único, usarlo directamente
-        displayData = data;
-        recordCount = 1;
+    // Verificar si todas las claves son números consecutivos
+    const isIndexedObject = keys.every((key, index) => key === String(index));
+    
+    if (isIndexedObject && keys.length > 0) {
+      // Convertir a array manteniendo el orden
+      return keys.map(key => data[key]);
     }
+    
+    // Si es un objeto único (sin índices numéricos), convertir a array de un elemento
+    return [data];
+  }
+  
+  return [data];
+};
+
+const StatusDashboard: React.FC<StatusDashboardProps> = ({ data }) => {
+    // ✅ CORRECCIÓN: Convertir a array primero
+    const arrayData = convertToArray(data);
+    const displayData = arrayData.length > 0 ? arrayData[0] : null;
+    const recordCount = arrayData.length;
     
     if (!displayData) {
         return (

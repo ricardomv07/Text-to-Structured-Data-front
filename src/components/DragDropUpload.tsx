@@ -63,6 +63,16 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
             } else {
                 onUpload(response.data.raw_text);
                 setJsonData(response.data.structured_data);
+                
+                // Guardar automáticamente en la base de datos
+                try {
+                    await axios.post(`${API_URL}api/save`, {
+                        data: response.data.structured_data
+                    });
+                } catch (saveError) {
+                    console.error('Error al guardar automáticamente:', saveError);
+                    // No mostramos error al usuario, solo lo registramos
+                }
             }
         } catch (error: any) {
             console.error('Error processing file:', error);

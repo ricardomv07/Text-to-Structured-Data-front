@@ -101,10 +101,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({ jsonData, onSave, onClear }) =>
   return (
     <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
       <div className="flex justify-between items-center mb-4">
-        <div>
-          <h3 className="text-xl font-semibold">Datos Estructurados (JSON)</h3>
-          <p className="text-xs text-green-400 mt-1">✓ Guardado automáticamente en la base de datos</p>
-        </div>
+        <h3 className="text-xl font-semibold">Datos Estructurados (JSON)</h3>
         <div className="flex gap-2">
           {!isEditing ? (
             <>
@@ -118,7 +115,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({ jsonData, onSave, onClear }) =>
               <SaveButton 
                 onClick={handleSaveToDatabase} 
                 disabled={saving || !editedData}
-                text={saving ? 'Guardando...' : 'Guardar cambios'}
+                text={saving ? 'Guardando...' : 'Guardar en BD'}
               />
             </>
           ) : (

@@ -54,10 +54,6 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
         formData.append('file', file);
 
         try {
-            // Delay artificial para ver el loader en desarrollo (eliminar en producción)
-            await new Promise(resolve => setTimeout(resolve, 30000)); // 3 segundos de espera
-            
-            // CAMBIO AQUÍ: Usamos ${API_URL} en lugar de localhost
             const response = await axios.post(`${API_URL}api/process`, formData, {
                 timeout: 60000, // 60 segundos para dar tiempo al servidor de despertar
             });

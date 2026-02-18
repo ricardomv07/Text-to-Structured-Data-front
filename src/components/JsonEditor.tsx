@@ -6,11 +6,12 @@ import axios from 'axios';
 interface JsonEditorProps {
   jsonData: any;
   onSave?: (data: any) => void;
+  onClear?: () => void;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://text-to-structured-data.onrender.com';
 
-const JsonEditor: React.FC<JsonEditorProps> = ({ jsonData, onSave }) => {
+const JsonEditor: React.FC<JsonEditorProps> = ({ jsonData, onSave, onClear }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState<any>(jsonData);
   const [jsonString, setJsonString] = useState('');
@@ -18,9 +19,17 @@ const JsonEditor: React.FC<JsonEditorProps> = ({ jsonData, onSave }) => {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  // Función para filtrar campos internos que no deben mostrarse
+  const filterInternalFields = (data: any) => {
+    if (!data) return data;
+    const { db_id, ...rest } = data;
+    return rest;
+  };
+
   useEffect(() => {
-    setEditedData(jsonData);
-    setJsonString(JSON.stringify(jsonData, null, 2));
+    const filteredData = filterInternalFields(jsonData);
+    setEditedData(filteredData);
+    setJsonString(JSON.stringify(filteredData, null, 2));
   }, [jsonData]);
 
   const handleEdit = () => {
@@ -63,10 +72,14 @@ const JsonEditor: React.FC<JsonEditorProps> = ({ jsonData, onSave }) => {
       if (response.data.success) {
         setSaveSuccess(true);
         setIsEditing(false);
-        if (onSave) {
-          onSave(editedData);
-        }
-        setTimeout(() => setSaveSuccess(false), 3000);
+        
+        // Mostrar mensaje de éxito y limpiar vista después de 2 segundos
+        setTimeout(() => {
+          setSaveSuccess(false);
+          if (onClear) {
+            onClear();
+          }
+        }, 2000);
       }
     } catch (err: any) {
       console.error('Error saving to database:', err);

@@ -156,7 +156,9 @@ const History: React.FC = () => {
                           month: 'short',
                           day: 'numeric',
                           hour: '2-digit',
-                          minute: '2-digit'
+                          minute: '2-digit',
+                          hour12: true,
+                          timeZone: 'America/Mexico_City'
                         })}
                       </td>
                     </tr>

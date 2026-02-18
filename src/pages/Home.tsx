@@ -13,6 +13,11 @@ const Home: React.FC = () => {
     const [jsonData, setJsonData] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
+    const handleClearView = () => {
+        setRawText('');
+        setJsonData(null);
+    };
+
     return (
         <div className="min-h-screen bg-gray-900 text-white p-8">
             <div className="max-w-7xl mx-auto">
@@ -42,7 +47,7 @@ const Home: React.FC = () => {
 
                 {!loading && rawText && jsonData && (
                     <div className="space-y-8">
-                        <JsonEditor jsonData={jsonData} onSave={setJsonData} />
+                        <JsonEditor jsonData={jsonData} onSave={setJsonData} onClear={handleClearView} />
                         <ProcessViewer rawText={rawText} jsonData={jsonData} />
                     </div>
                 )}

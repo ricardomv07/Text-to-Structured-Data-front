@@ -22,6 +22,16 @@ const JsonEditor: React.FC<JsonEditorProps> = ({ jsonData, onSave, onClear }) =>
   // Función para filtrar campos internos que no deben mostrarse
   const filterInternalFields = (data: any) => {
     if (!data) return data;
+    
+    // Si es array, filtrar cada elemento
+    if (Array.isArray(data)) {
+      return data.map(item => {
+        const { db_id, ...rest } = item;
+        return rest;
+      });
+    }
+    
+    // Si es objeto único, filtrar
     const { db_id, ...rest } = data;
     return rest;
   };
@@ -61,17 +71,34 @@ const JsonEditor: React.FC<JsonEditorProps> = ({ jsonData, onSave, onClear }) =>
       return;
     }
 
+    // ✅ CORRECCIÓN: Prevenir múltiples guardados simultáneos
+    if (saving) {
+      console.log('Ya se está guardando, evitando duplicado...');
+      return;
+    }
+
     setSaving(true);
     setSaveSuccess(false);
 
     try {
+      // ✅ CORRECCIÓN: Enviar array directamente, no convertir a objeto
+      const dataToSave = Array.isArray(editedData) ? editedData : [editedData];
+      
+      console.log('Guardando datos:', {
+        isArray: Array.isArray(dataToSave),
+        count: dataToSave.length,
+        data: dataToSave
+      });
+      
       const response = await axios.post(`${API_URL}api/save`, {
-        data: editedData
+        data: dataToSave // Enviar como array
       });
 
       if (response.data.success) {
         setSaveSuccess(true);
         setIsEditing(false);
+        
+        console.log('✓ Guardado exitoso:', response.data.message);
         
         // Mostrar mensaje de éxito y limpiar vista después de 2 segundos
         setTimeout(() => {
@@ -166,11 +193,36 @@ const JsonEditor: React.FC<JsonEditorProps> = ({ jsonData, onSave, onClear }) =>
       )}
 
       <div className="mt-4 flex gap-2 text-xs text-gray-400">
-        <span>Cliente: <strong className="text-white">{editedData?.cliente || 'N/A'}</strong></span>
-        <span>•</span>
-        <span>Tipo: <strong className="text-white">{editedData?.tipo_solicitud || 'N/A'}</strong></span>
-        <span>•</span>
-        <span>Fecha: <strong className="text-white">{editedData?.fecha || 'N/A'}</strong></span>
+        {(() => {
+          // ✅ CORRECCIÓN: Manejar arrays mostrando el primer registro
+          const displayData = Array.isArray(editedData) 
+            ? (editedData.length > 0 ? editedData[0] : null)
+            : editedData;
+          
+          const recordCount = Array.isArray(editedData) ? editedData.length : 1;
+          
+          if (!displayData) {
+            return <span>Sin datos</span>;
+          }
+          
+          return (
+            <>
+              <span>Cliente: <strong className="text-white">{displayData?.cliente || 'N/A'}</strong></span>
+              <span>•</span>
+              <span>Tipo: <strong className="text-white">{displayData?.tipo_solicitud || 'N/A'}</strong></span>
+              <span>•</span>
+              <span>Fecha: <strong className="text-white">{displayData?.fecha || 'N/A'}</strong></span>
+              {recordCount > 1 && (
+                <>
+                  <span>•</span>
+                  <span className="text-blue-400">
+                    <strong>{recordCount} registros total</strong>
+                  </span>
+                </>
+              )}
+            </>
+          );
+        })()}
       </div>
     </div>
   );

@@ -70,7 +70,18 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
                 setError(response.data.error);
             } else {
                 onUpload(response.data.raw_text);
-                setJsonData(response.data.structured_data);
+                
+                // ✅ CORRECCIÓN: Mantener structured_data como array
+                const structuredData = response.data.structured_data;
+                
+                // Verificar que sea array y mantenerlo como tal
+                if (Array.isArray(structuredData)) {
+                    console.log(`✓ Extraídos ${structuredData.length} registro(s) como array`);
+                    setJsonData(structuredData); // Mantener como array [{...}, {...}]
+                } else {
+                    console.warn('⚠ structured_data no es array, convirtiendo...');
+                    setJsonData([structuredData]); // Convertir a array si viene como objeto único
+                }
             }
         } catch (error: any) {
             console.error('Error processing file:', error);

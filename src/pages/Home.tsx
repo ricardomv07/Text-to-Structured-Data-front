@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { History as HistoryIcon } from 'lucide-react';
+import { History as HistoryIcon, Trash2 } from 'lucide-react';
 import DragDropUpload from '../components/DragDropUpload';
 import ProcessViewer from '../components/ProcessViewer';
 import StatusDashboard from '../components/StatusDashboard';
@@ -23,17 +23,33 @@ const Home: React.FC = () => {
             <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-4xl font-bold">Text to Structured Data</h1>
-                    <button
-                        onClick={() => navigate('/historial')}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition"
-                    >
-                        <HistoryIcon size={20} />
-                        Ver Historial
-                    </button>
+                    <div className="flex gap-3">
+                        {(rawText || jsonData) && (
+                            <button
+                                onClick={handleClearView}
+                                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition"
+                            >
+                                <Trash2 size={20} />
+                                Limpiar
+                            </button>
+                        )}
+                        <button
+                            onClick={() => navigate('/historial')}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition"
+                        >
+                            <HistoryIcon size={20} />
+                            Ver Historial
+                        </button>
+                    </div>
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <DragDropUpload onUpload={setRawText} setLoading={setLoading} setJsonData={setJsonData} />
+                    <DragDropUpload 
+                        onUpload={setRawText} 
+                        setLoading={setLoading} 
+                        setJsonData={setJsonData} 
+                        hasData={!!jsonData || !!rawText}
+                    />
                     <StatusDashboard data={jsonData} />
                 </div>
 

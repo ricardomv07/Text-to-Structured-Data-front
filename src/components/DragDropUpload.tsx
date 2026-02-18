@@ -6,13 +6,14 @@ interface DragDropUploadProps {
     onUpload: (text: string) => void;
     setLoading: (loading: boolean) => void;
     setJsonData: (data: any) => void;
+    hasData: boolean;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://text-to-structured-data.onrender.com';
 
 console.log("Conectando a:", API_URL);
 
-const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, setJsonData }) => {
+const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, setJsonData, hasData }) => {
     const [dragActive, setDragActive] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,6 +28,12 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
         e.preventDefault();
         e.stopPropagation();
         setDragActive(false);
+        
+        if (hasData) {
+            setError('Por favor, limpia los datos actuales antes de subir otro documento');
+            return;
+        }
+        
         setError(null);
 
         const files = e.dataTransfer.files;
@@ -37,6 +44,7 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
     };
 
     const handleClick = () => {
+        if (hasData) return;
         fileInputRef.current?.click();
     };
 
@@ -73,14 +81,17 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
             
             if (error.code === 'ECONNABORTED') {
                 errorMessage = 'El servidor tardó demasiado en responder. Por favor, intenta nuevamente.';
-            } else if (error.response?.status === 500) {
-                // Mejorar el mensaje de error para mostrar detalles del backend
-                const backendError = error.response?.data?.error || error.response?.data?.details || error.response?.data?.message;
-                errorMessage = backendError 
-                    ? `Error del servidor: ${backendError}` 
-                    : 'Error interno del servidor. Revisa la consola del navegador para más detalles.';
-            } else if (error.response?.data?.error) {
-                errorMessage = error.response.data.error;
+            } else if (error.response) {
+                // Primero intentar obtener el mensaje de error del backend
+                const backendError = error.response?.data?.error || error.response?.data?.detail || error.response?.data?.message;
+                
+                if (backendError) {
+                    errorMessage = backendError;
+                } else if (error.response?.status === 500) {
+                    errorMessage = 'Error interno del servidor. Revisa la consola del navegador para más detalles.';
+                } else if (error.response?.status === 400) {
+                    errorMessage = 'Documento inválido o no soportado.';
+                }
             } else if (!error.response) {
                 errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión a internet.';
             }
@@ -106,12 +117,18 @@ const DragDropUpload: React.FC<DragDropUploadProps> = ({ onUpload, setLoading, s
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
                 onClick={handleClick}
-                className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition ${
-                    dragActive ? 'border-blue-500 bg-blue-900/20' : 'border-gray-600 hover:border-gray-500'
+                className={`border-2 border-dashed rounded-lg p-12 text-center transition ${
+                    hasData 
+                        ? 'border-gray-700 bg-gray-800/50 cursor-not-allowed opacity-50' 
+                        : dragActive 
+                            ? 'border-blue-500 bg-blue-900/20 cursor-pointer' 
+                            : 'border-gray-600 hover:border-gray-500 cursor-pointer'
                 }`}
             >
                 <Upload className="mx-auto mb-4" size={48} />
-                <p className="text-xl font-semibold mb-2">Arrastra archivos aquí o haz click</p>
+                <p className="text-xl font-semibold mb-2">
+                    {hasData ? 'Limpia los datos para subir otro documento' : 'Arrastra archivos aquí o haz click'}
+                </p>
                 <p className="text-gray-400">Soporta: PDF, TXT, DOCX, XLSX</p>
             </div>
             {error && (
